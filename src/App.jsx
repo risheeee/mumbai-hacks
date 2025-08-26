@@ -1,11 +1,39 @@
-// App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
-  const [chatOpen, setChatOpen] = useState(false);
+
+  // ON-LOAD ANIMATION FOR HOME SECTION
+  const [isHomeVisible, setIsHomeVisible] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsHomeVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // SCROLL ANIMATION FOR ALL OTHER SECTIONS
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the element is visible
+      }
+    );
+
+    const elementsToAnimate = document.querySelectorAll(".animate-on-scroll");
+    elementsToAnimate.forEach((el) => observer.observe(el));
+    
+    // Cleanup observer on component unmount
+    return () => observer.disconnect();
+  }, [fileUploaded]); // Re-run this effect when the file is uploaded to find the new sections
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -17,7 +45,6 @@ function App() {
 
   return (
     <div className="App">
-      {/* HEADER */}
       <header className="header">
         <h1 className="logo">MumbaiHacks Health Companion</h1>
         <nav>
@@ -32,64 +59,82 @@ function App() {
         </nav>
       </header>
 
-      {/* MAIN */}
       <main>
         {!fileUploaded ? (
-          <section id="home">
-            <div className="content-box">
-              <h2>Welcome! Upload Your Discharge Report</h2>
-              <p>
-                To get started, please upload your post-discharge report for
-                analysis.
+          <section id="home" className="upload-section">
+            <div className="upload-box">
+              <h2 className={`animate-on-scroll ${isHomeVisible ? "is-visible" : ""}`}>
+                Transform Your Recovery Journey
+              </h2>
+              <p className={`animate-on-scroll ${isHomeVisible ? "is-visible" : ""}`} style={{transitionDelay: '200ms'}}>
+                Upload your discharge report and unlock personalized health insights, monitoring, and care coordination.
               </p>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.jpg,.png"
-                onChange={handleFileUpload}
-              />
+              <div className={`animate-on-scroll ${isHomeVisible ? "is-visible" : ""}`} style={{transitionDelay: '400ms'}}>
+                <label htmlFor="file-upload" className="btn btn-accent">
+                  🏥 Upload Your Report
+                </label>
+                <input id="file-upload" type="file" style={{display: 'none'}} onChange={handleFileUpload} />
+              </div>
             </div>
           </section>
         ) : (
           <>
-            {/* DASHBOARD */}
             <section id="dashboard">
-              <div className="content-box">
-                <h2>Dashboard</h2>
-                <p>
-                  Overview of your health status based on the uploaded report:{" "}
-                  <b>{fileName}</b>
-                </p>
+              <div className="content-box animate-on-scroll">
+                <h2>🎯 Your Health Dashboard</h2>
+                <p style={{color: 'var(--text-dark)', fontSize: '1.1rem'}}>Comprehensive overview based on your uploaded report: <b>{fileName}</b></p>
                 <div className="stats">
-                  <div className="stat-card">Recovery Progress: 75%</div>
-                  <div className="stat-card">Next Checkup: In 5 days</div>
+                  <div className="stat-card">
+                    <div style={{fontSize: '2rem', marginBottom: '8px'}}>75%</div>
+                    <div>Recovery Progress</div>
+                  </div>
+                  <div className="stat-card">
+                    <div style={{fontSize: '2rem', marginBottom: '8px'}}>5</div>
+                    <div>Days Until Checkup</div>
+                  </div>
+                  <div className="stat-card">
+                    <div style={{fontSize: '2rem', marginBottom: '8px'}}>✅</div>
+                    <div>All Vitals Normal</div>
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* MONITORING */}
             <section id="monitoring">
-              <div className="content-box">
-                <h2>Monitoring After Discharge</h2>
-                <p>Track your vital signs and symptoms.</p>
+              <div className="content-box animate-on-scroll">
+                <h2>📊 Continuous Monitoring</h2>
+                <p style={{color: 'var(--text-dark)', fontSize: '1.1rem'}}>Real-time tracking of your vital signs and recovery metrics.</p>
                 <div className="monitoring-cards">
-                  <div className="card">Blood Pressure: Normal</div>
-                  <div className="card">Heart Rate: 72 bpm</div>
-                  <div className="card">Medication Reminders: On</div>
+                  <div className="card">
+                    <div style={{fontSize: '1.5rem', marginBottom: '8px'}}>💓</div>
+                    <div><strong>Heart Rate</strong></div>
+                    <div>72 bpm - Normal</div>
+                  </div>
+                  <div className="card">
+                    <div style={{fontSize: '1.5rem', marginBottom: '8px'}}>🩺</div>
+                    <div><strong>Blood Pressure</strong></div>
+                    <div>120/80 - Optimal</div>
+                  </div>
+                  <div className="card">
+                    <div style={{fontSize: '1.5rem', marginBottom: '8px'}}>💊</div>
+                    <div><strong>Medications</strong></div>
+                    <div>All reminders active</div>
+                  </div>
                 </div>
               </div>
             </section>
-
-            {/* REPORTS */}
+            
             <section id="reports">
-              <div className="content-box">
-                <h2>Reports / Analysis</h2>
-                <p>View detailed reports and analysis from your data.</p>
+              <div className="content-box animate-on-scroll">
+                <h2>📈 Detailed Analytics</h2>
+                <p style={{color: 'var(--text-dark)', fontSize: '1.1rem'}}>Comprehensive reports and trend analysis from your health data.</p>
                 <table className="reports-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Metric</th>
-                      <th>Value</th>
+                      <th>📅 Date</th>
+                      <th>📊 Metric</th>
+                      <th>📋 Value</th>
+                      <th>🎯 Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -97,93 +142,58 @@ function App() {
                       <td>2025-08-20</td>
                       <td>Blood Sugar</td>
                       <td>120 mg/dL</td>
+                      <td style={{color: '#4CAF50'}}>Normal</td>
                     </tr>
                     <tr>
                       <td>2025-08-22</td>
-                      <td>BP</td>
+                      <td>Blood Pressure</td>
                       <td>122/80</td>
+                      <td style={{color: '#4CAF50'}}>Excellent</td>
+                    </tr>
+                    <tr>
+                      <td>2025-08-24</td>
+                      <td>Weight</td>
+                      <td>70 kg</td>
+                      <td style={{color: '#FF9800'}}>Monitor</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
-            {/* INSURANCE */}
             <section id="insurance">
-              <div className="content-box">
-                <h2>Insurance Claim Assistance</h2>
-                <p>Get help with filing insurance claims.</p>
+              <div className="content-box animate-on-scroll">
+                <h2>🛡️ Insurance Made Simple</h2>
+                <p style={{color: 'var(--text-dark)', fontSize: '1.1rem'}}>Streamlined insurance claim processing with AI assistance.</p>
                 <form className="insurance-form">
-                  <input type="text" placeholder="Claim ID" />
-                  <textarea placeholder="Description" rows="3" />
-                  <button type="button">Submit Claim</button>
+                  <input type="text" placeholder="Enter your Claim ID" />
+                  <input type="text" placeholder="Treatment Description" />
+                  <textarea placeholder="Additional notes or concerns..." rows="4" />
+                  <button type="button" className="btn btn-accent">
+                    🚀 Submit Claim
+                  </button>
                 </form>
               </div>
             </section>
 
-            {/* CAREGIVER */}
             <section id="caregiver">
-              <div className="content-box">
-                <h2>Caregiver Mode</h2>
-                <p>
-                  Switch to caregiver view for managing multiple patients and
-                  alerts.
-                </p>
-                <button>Enable Caregiver Mode</button>
+              <div className="content-box animate-on-scroll">
+                <h2>👥 Caregiver Dashboard</h2>
+                <p style={{color: 'var(--text-dark)', fontSize: '1.1rem'}}>Comprehensive care coordination for healthcare providers and family members.</p>
+                <div style={{textAlign: 'center', margin: '32px 0'}}>
+                  <div style={{fontSize: '3rem', marginBottom: '16px'}}>👨‍⚕️</div>
+                  <p style={{marginBottom: '24px', color: 'var(--text-dark)', fontSize: '1.1rem'}}>
+                    Monitor multiple patients, receive alerts, and coordinate care seamlessly.
+                  </p>
+                  <button className="btn btn-accent">
+                    🔄 Enable Caregiver Mode
+                  </button>
+                </div>
               </div>
             </section>
           </>
         )}
       </main>
-
-      {/* FLOATING CHATBOT */}
-      {fileUploaded && (
-        <>
-          <div className="chat-fab" onClick={() => setChatOpen(!chatOpen)}>
-            💬
-          </div>
-
-          {chatOpen && (
-            <div className="chat-overlay">
-              <header>
-                <span>AI Health Companion</span>
-                <span
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setChatOpen(false)}
-                >
-                  ✕
-                </span>
-              </header>
-
-              <div style={{ padding: "12px" }}>
-                <div className="chips" style={{ marginBottom: 10 }}>
-                  <span className="chip">I felt dizzy after meds</span>
-                  <span className="chip">What should I eat tonight?</span>
-                  <span className="chip">Translate to Marathi</span>
-                  <span className="chip">Remind my caregiver</span>
-                </div>
-              </div>
-
-              <textarea
-                placeholder="Type here… e.g., 'Had mild chest tightness after a 10-min walk'"
-                rows={3}
-              ></textarea>
-
-              <div className="chat-actions">
-                <button className="btn-primary">Send</button>
-                <button className="btn-ghost">Voice</button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* FOOTER */}
-      <footer>
-        <p>
-          © 2025 MumbaiHacks Team — Agentic AI for Post-Discharge & Chronic Care
-        </p>
-      </footer>
     </div>
   );
 }
